@@ -14,7 +14,6 @@ export default {
 import JSZip from 'jszip';
 import { ref, toRef } from 'vue';
 
-import { InputChangeEvent } from '@/components/ImageConverter/types';
 import { useStore } from '@/store';
 
 const IMAGE_PREFIX = '//cdn.pet-friends.co.kr/static/product/experiment/detail/v2/';
@@ -24,9 +23,11 @@ const link = ref<HTMLInputElement>();
 
 const setPayload = toRef(useStore(), 'setPayload');
 
-const onChange = (e: InputChangeEvent) => {
-    if (e.target.files) {
-        files.value = Array.from(e.target.files);
+const onChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+
+    if (target?.files) {
+        files.value = Array.from(target.files);
     }
 };
 
