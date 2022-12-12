@@ -5,6 +5,10 @@ import { DefaultState } from '@/store/types';
 
 export const useStore = defineStore('main', {
     actions: {
+        addDuplicate(id: string) {
+            if (!this.duplicatedIds) this.duplicatedIds = [];
+            this.duplicatedIds.push(id);
+        },
         setPayload(payload: Payload) {
             this.payload = payload;
         },
@@ -14,6 +18,7 @@ export const useStore = defineStore('main', {
     },
     state: () =>
         ({
+            duplicatedIds: null,
             payload: null,
         } as DefaultState),
 });

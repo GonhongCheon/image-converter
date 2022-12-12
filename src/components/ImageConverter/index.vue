@@ -1,4 +1,5 @@
 <template>
+    <input v-model="version" type="text" placeholder="version prefix" />
     <input type="file" multiple accept="image/*" @change="onChange" />
     <button @click="onConvert">Convert</button>
     <a ref="link" :href="url" download="images.zip"></a>
@@ -12,16 +13,17 @@ export default {
 
 <script lang="ts" setup>
 import JSZip from 'jszip';
-import { ref, toRef } from 'vue';
+import { ref, toRefs } from 'vue';
 
 import { useStore } from '@/store';
 
-const IMAGE_PREFIX = '//cdn.pet-friends.co.kr/static/product/experiment/detail/v2/';
+const IMAGE_PREFIX = '//cdn.pet-friends.co.kr/static/product/experiment/detail/';
 const files = ref<File[]>();
 const url = ref('');
 const link = ref<HTMLInputElement>();
 
-const setPayload = toRef(useStore(), 'setPayload');
+const { setPayload, addDuplicate } = toRefs(useStore());
+const version = ref('');
 
 const onChange = (e: Event) => {
     const target = e.target as HTMLInputElement;
@@ -47,17 +49,20 @@ const onConvert = async () => {
         const numbers = file.name
             .split(']')
             .map(str => (str.includes('[') ? str.replace('[', '') : null))
-            .filter(str => str) as string[];
+            .filter(str => str && !isNaN(Number(str))) as string[];
 
         zip.file(`${nameUUID}${ext}`, file);
 
-        const innerObj = numbers.reduce(
-            (obj, key) => ({
-                ...obj,
-                [key]: `${IMAGE_PREFIX}${nameUUID}${ext}`,
-            }),
-            {},
-        );
+        const innerObj = numbers.reduce((acc, key) => {
+            if (key in obj) {
+                addDuplicate.value(key);
+            }
+
+            return {
+                ...acc,
+                [key]: `${IMAGE_PREFIX}${version.value ?? 'default'}/${nameUUID}${ext}`,
+            };
+        }, {});
 
         return {
             ...obj,
